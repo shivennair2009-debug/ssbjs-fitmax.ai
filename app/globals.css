@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+  --card: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --primary: #00FF9D;
+  --secondary: #7000FF;
+  --accent: #FF007A;
+  --muted: rgba(255, 255, 255, 0.4);
+}
+
+.light {
+  --background: #f8fafc;
+  --foreground: #020617;
+  --card: rgba(255, 255, 255, 0.8);
+  --card-border: rgba(0, 0, 0, 0.05);
+  --primary: #059669;
+  /* Slightly darker emerald for contrast */
+  --secondary: #6d28d9;
+  /* Deeper violet */
+  --accent: #be123c;
+  /* Deeper rose */
+  --muted: rgba(0, 0, 0, 0.5);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+  /* Prevent body scroll, use container scroll */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 10px;
+}
+
+/* Glow Utilities */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+}
+
+.light .glow-primary {
+  box-shadow: 0 4px 20px rgba(5, 150, 105, 0.15);
+}
+
+/* Custom Utilities */
+.mobile-container {
+  max-width: 450px;
+  width: 100%;
+  height: 100dvh;
+  /* Dynamic viewport height for mobile browsers */
+  margin: 0 auto;
+  position: relative;
+  background: var(--background);
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.light .mobile-container {
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+}
