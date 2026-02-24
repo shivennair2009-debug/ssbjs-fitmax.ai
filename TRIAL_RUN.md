@@ -9,7 +9,7 @@ If your phone and Mac are on the same Wi-Fi:
 1.  **Find your IP address**: I found yours is `192.168.1.138`.
 2.  **Run the app**: Make sure `npm run dev` is running on your Mac.
 3.  **Open on Phone**: Open Safari or Chrome on your phone and go to:
-    `http://192.168.1.138:3001` (or whichever port the app is running on).
+    `http://192.168.1.138:3002` (the current dev port).
 4.  **Add to Home Screen**: For the best "app" experience, tap the **Share** button in Safari and select **"Add to Home Screen"**.
 
 ## Method 2: Vercel (Professional & Remote)
