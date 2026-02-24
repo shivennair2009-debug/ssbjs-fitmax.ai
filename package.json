@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@next/swc-darwin-arm64": "^16.1.6",
     "autoprefixer": "^10.4.24",
     "clsx": "^2.1.1",
     "dotenv": "^17.3.1",
