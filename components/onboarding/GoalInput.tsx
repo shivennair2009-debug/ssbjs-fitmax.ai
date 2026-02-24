@@ -74,7 +74,7 @@ export function GoalInput({ onNext }: { onNext: (goal: string) => void }) {
             <div className="pt-8">
                 <div className="flex items-center gap-4 text-white/30 text-sm">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span>I'm ready to help you plan!</span>
+                    <span>I&apos;m ready to help you plan!</span>
                 </div>
             </div>
         </motion.div>

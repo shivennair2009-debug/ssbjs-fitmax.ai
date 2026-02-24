@@ -90,7 +90,7 @@ export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPla
                         RX
                     </div>
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Neural Trainer</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">AI Coach</p>
                         <h2 className="text-2xl font-black uppercase tracking-tight">Roxy</h2>
                     </div>
                 </div>
@@ -128,7 +128,7 @@ export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPla
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                            placeholder="Adjust my protocol..."
+                            placeholder="How can I help with your plan?"
                             className="w-full bg-background border border-card-border rounded-2xl px-6 py-4 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all"
                         />
                     </div>
@@ -146,7 +146,7 @@ export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPla
                     </button>
                 </div>
                 <p className="text-[9px] text-center text-muted mt-4 font-bold uppercase tracking-widest opacity-40">
-                    AI Recalibration Active
+                    AI is ready to help
                 </p>
             </div>
         </motion.div>

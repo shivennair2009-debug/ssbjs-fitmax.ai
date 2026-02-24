@@ -95,6 +95,7 @@ Please provide a detailed, JSON-formatted workout plan with the following struct
           "name": "string",
           "reps": "string",
           "sets": "number",
+          "durationSeconds": "number (the AI-defined duration for this specific exercise in seconds)",
           "rest": "string (e.g., '60 seconds')",
           "notes": "string with form cues",
           "steps": ["Step 1", "Step 2", "Step 3"]
@@ -111,6 +112,7 @@ Please provide a detailed, JSON-formatted workout plan with the following struct
           "name": "string",
           "reps": "string",
           "sets": "number",
+          "durationSeconds": "number",
           "rest": "string",
           "notes": "string with form cues",
           "steps": ["Step 1", "Step 2", "Step 3"]
@@ -130,6 +132,7 @@ Please provide a detailed, JSON-formatted workout plan with the following struct
               "name": "string",
               "reps": "string",
               "sets": "number",
+              "durationSeconds": "number",
               "rest": "string",
               "notes": "string with form cues",
               "steps": ["Step 1", "Step 2", "Step 3"]
@@ -210,6 +213,7 @@ Return JSON:
           "name": "string",
           "reps": "string",
           "sets": "number",
+          "durationSeconds": "number",
           "rest": "string (e.g., '60 seconds')",
           "notes": "string with form cues",
           "steps": ["Step 1", "Step 2", "Step 3"]
@@ -268,6 +272,7 @@ Return JSON:
           "name": "string",
           "reps": "string",
           "sets": "number",
+          "durationSeconds": "number",
           "rest": "string",
           "notes": "string with form cues",
           "steps": ["Step 1", "Step 2", "Step 3"]
@@ -324,6 +329,7 @@ Return JSON:
               "name": "string",
               "reps": "string",
               "sets": "number",
+              "durationSeconds": "number",
               "rest": "string",
               "notes": "string with form cues",
               "steps": ["Step 1", "Step 2", "Step 3"]
@@ -392,6 +398,7 @@ Return JSON:
           "name": "string",
           "reps": "string",
           "sets": "number",
+          "durationSeconds": "number",
           "rest": "string",
           "notes": "string with form cues",
           "steps": ["Step 1", "Step 2", "Step 3"]
@@ -687,5 +694,53 @@ Generate JSON only, no extra text.`;
     console.error("Failed to parse workout adaptation:", text);
     console.error("Parse error details:", error);
     throw new Error("Failed to adapt workout");
+  }
+}
+
+export async function generateSmartMealRecommendation(
+  goal: string,
+  mode: "active" | "intermediate" | "locked-in",
+  recentMeals: any[],
+  recentWorkouts: any[]
+) {
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.5-flash-lite",
+    generationConfig: { responseMimeType: "application/json" },
+  });
+
+  const prompt = `You are an elite nutrition AI specialist. Suggest the NEXT optimal meal for this user based on their goals and recent activity.
+  
+USER GOAL: ${goal}
+INTENSITY MODE: ${mode.toUpperCase()}
+
+RECENT MEAL HISTORY:
+${JSON.stringify(recentMeals)}
+
+RECENT WORKOUT HISTORY:
+${JSON.stringify(recentWorkouts)}
+
+Provide a JSON-formatted smart recommendation for the NEXT meal:
+{
+  "sampleMealPlan": [
+    {
+      "meal": "string (name of the meal)",
+      "foods": ["string"],
+      "calories": "number",
+      "macros": "string (e.g. '30g P, 40g C, 10g F')"
+    }
+  ],
+  "tips": ["string explaining why this meal is optimal right now (e.g. post-workout recovery or pre-workout fuel)"]
+}
+
+Generate JSON only, no extra text.`;
+
+  const result = await withBackoff(() => model.generateContent(prompt));
+  const text = result.response.text();
+
+  try {
+    return await parseJsonWithRepair(text);
+  } catch (error) {
+    console.error("Failed to parse smart meal recommendation:", text);
+    throw new Error("Failed to generate smart recommendation");
   }
 }

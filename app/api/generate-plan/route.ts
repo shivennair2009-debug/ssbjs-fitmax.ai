@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  generatePlanOverview,
-  generateWeeklyPlan,
-  generateMonthlyPlan,
-} from "@/lib/gemini";
+import { generateWorkoutPlan } from "@/lib/gemini";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,18 +13,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const overview = await generatePlanOverview(goal, mode, userContext);
-    const weekly = await generateWeeklyPlan(goal, mode, userContext);
-    const monthly = await generateMonthlyPlan(goal, mode);
-
-    const plan = {
-      ...overview,
-      ...weekly,
-      ...monthly,
-    };
+    const plan = await generateWorkoutPlan(goal, mode, userContext);
 
     return NextResponse.json(plan);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.status === 429) {
+      return NextResponse.json(
+        { error: "The AI is currently busy. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
     console.error("Error generating workout plan:", error);
     return NextResponse.json(
       { error: "Failed to generate workout plan" },

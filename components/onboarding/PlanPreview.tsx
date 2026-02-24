@@ -23,35 +23,36 @@ interface PlanPreviewProps {
 const SLIDES = [
     {
         id: "baseline",
-        title: "Biological Baseline",
-        subtitle: "AI Analysis Complete",
-        description: "Your system has cross-referenced your current goals with biometric standards. We have established your starting metabolic and muscular markers.",
+        title: "Starting Point",
+        subtitle: "Analysis Complete",
+        description: "I've checked your goals. We've set your starting points for fitness and nutrition.",
         icon: <Dna className="w-12 h-12" />,
         color: "primary",
         stat: "Level 1.4",
-        statLabel: "Adherence Readiness"
+        statLabel: "Ready to Start"
     },
     {
         id: "protocol",
-        title: "Strategic Protocol",
-        subtitle: "Tactical Execution Plan",
-        description: "Focusing on progressive overload and specific metabolic stressors identified as optimal for your specific trajectory.",
+        title: "Personal Plan",
+        subtitle: "Daily Action Plan",
+        description: "Focusing on steady progress and the best exercises for your specific goal.",
         icon: <ShieldCheck className="w-12 h-12" />,
         color: "secondary",
         stat: "15%",
-        statLabel: "Expected Delta (Weekly)"
+        statLabel: "Better Every Week"
     },
     {
         id: "loop",
-        title: "Recalibration Loop",
-        subtitle: "Real-Time Adaptation",
-        description: "Every missed session or data point is processed. The system will shift load dynamically to ensure you never plateau.",
+        title: "Smart Adjustments",
+        subtitle: "Always Learning",
+        description: "I'll watch your progress 24/7. Your plan shifts automatically to make sure you keep getting results.",
         icon: <Brain className="w-12 h-12" />,
         color: "accent",
         stat: "24/7",
-        statLabel: "Neural Monitoring"
+        statLabel: "AI Active"
     }
 ];
+
 const LOADING_STEPS = [
     { min: 0, label: "Analyzing goals" },
     { min: 20, label: "Mapping 7-day split" },
@@ -93,7 +94,6 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
                 const plan = await response.json();
                 setWorkoutPlan(plan);
 
-                // Store plan in localStorage for later use
                 if (typeof window !== "undefined") {
                     localStorage.setItem("currentWorkoutPlan", JSON.stringify(plan));
                     localStorage.setItem("fitnessGoal", goal);
@@ -114,6 +114,7 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
 
         generatePlan();
     }, [goal, mode]);
+
     useEffect(() => {
         if (!isLoading) {
             setLoadingProgress(100);
@@ -165,7 +166,6 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
                     <p className="text-white/60">{error}</p>
                     <p className="text-xs text-white/40">
                         Make sure you have set up the GEMINI_API_KEY in your .env.local file.
-                        Get your API key from: https://aistudio.google.com/app/apikey
                     </p>
                     <button
                         onClick={() => window.location.reload()}
@@ -188,7 +188,7 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
                         className="w-16 h-16 rounded-full border-2 border-primary border-t-transparent mx-auto"
                     />
                     <div className="space-y-3">
-                        <h2 className="text-2xl font-black uppercase">Analyzing Your Goals</h2>
+                        <h2 className="text-2xl font-black uppercase">Creating Your Plan</h2>
                         <p className="text-white/60">{loadingLabel}</p>
                         <p className="text-white/40 text-xs font-black uppercase tracking-[0.3em]">{loadingProgress}%</p>
                     </div>
@@ -216,84 +216,63 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
 
             <div className="flex-grow flex items-center justify-center p-8">
                 <AnimatePresence mode="wait">
-                    {isLoading ? (
-                        <motion.div
-                            key="loading"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="text-center"
-                        >
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"
-                            />
-                            <p className="text-white/60">Generating your personalized plan...</p>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key={currentSlide}
-                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 1.1, y: -10 }}
-                            className="w-full text-center space-y-12"
-                        >
-                            <div className="flex flex-col items-center">
-                                <div
-                                    className={cn(
-                                        "p-8 rounded-[2.5rem] border bg-white/5 mb-8",
-                                        colorMap[slide.color]
-                                    )}
-                                >
-                                    {slide.icon}
-                                </div>
-                                <p
-                                    className={cn(
-                                        "text-xs font-black uppercase tracking-[0.4em] mb-2",
-                                        colorMap[slide.color]
-                                    )}
-                                >
-                                    {slide.subtitle}
-                                </p>
-                                <h2 className="text-4xl font-black uppercase tracking-tight leading-none mb-6">
-                                    {slide.title}
-                                </h2>
-                                <p className="text-white/50 text-sm leading-relaxed max-w-xs mx-auto">
-                                    {slide.description}
-                                </p>
-
-                                {/* Display AI-generated plan info on first slide */}
-                                {currentSlide === 0 && workoutPlan && (
-                                    <div className="mt-8 space-y-3 text-left bg-white/5 p-6 rounded-2xl border border-white/10">
-                                        <p className="text-xs font-bold uppercase text-primary">
-                                            Generated Plan
-                                        </p>
-                                        <h3 className="text-lg font-black">
-                                            {workoutPlan.planName || "Personalized Program"}
-                                        </h3>
-                                        <p className="text-white/60 text-sm">
-                                            Duration: {workoutPlan.duration}
-                                        </p>
-                                        <p className="text-white/60 text-sm line-clamp-2">
-                                            {workoutPlan.overview}
-                                        </p>
-                                    </div>
+                    <motion.div
+                        key={currentSlide}
+                        initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 1.1, y: -10 }}
+                        className="w-full text-center space-y-12"
+                    >
+                        <div className="flex flex-col items-center">
+                            <div
+                                className={cn(
+                                    "p-8 rounded-[2.5rem] border bg-white/5 mb-8",
+                                    colorMap[slide.color]
                                 )}
+                            >
+                                {slide.icon}
                             </div>
+                            <p
+                                className={cn(
+                                    "text-xs font-black uppercase tracking-[0.4em] mb-2",
+                                    colorMap[slide.color]
+                                )}
+                            >
+                                {slide.subtitle}
+                            </p>
+                            <h2 className="text-4xl font-black uppercase tracking-tight leading-none mb-6">
+                                {slide.title}
+                            </h2>
+                            <p className="text-white/50 text-sm leading-relaxed max-w-xs mx-auto">
+                                {slide.description}
+                            </p>
 
-                            <div className="grid grid-cols-1 gap-4">
-                                <div className="p-6 rounded-3xl bg-white/5 border border-white/5 flex flex-col items-center">
-                                    <span className="text-4xl font-black italic">
-                                        {slide.stat}
-                                    </span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
-                                        {slide.statLabel}
-                                    </span>
+                            {currentSlide === 0 && workoutPlan && (
+                                <div className="mt-8 space-y-3 text-left bg-white/5 p-6 rounded-2xl border border-white/10">
+                                    <p className="text-xs font-bold uppercase text-primary">
+                                        Your Workout
+                                    </p>
+                                    <h3 className="text-lg font-black">
+                                        {workoutPlan.planName || "Personalized Program"}
+                                    </h3>
+                                    <p className="text-white/60 text-sm">
+                                        {workoutPlan.overview}
+                                    </p>
                                 </div>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="p-6 rounded-3xl bg-white/5 border border-white/5 flex flex-col items-center">
+                                <span className="text-4xl font-black italic">
+                                    {slide.stat}
+                                </span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
+                                    {slide.statLabel}
+                                </span>
                             </div>
-                        </motion.div>
-                    )}
+                        </div>
+                    </motion.div>
                 </AnimatePresence>
             </div>
 
@@ -306,13 +285,10 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
                         "text-black"
                     )}
                 >
-                    {currentSlide === SLIDES.length - 1 ? "Initialize Protocol" : "Proceed Analysis"}
+                    {currentSlide === SLIDES.length - 1 ? "Start Training" : "Continue"}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>
         </div>
     );
 }
-
-
-

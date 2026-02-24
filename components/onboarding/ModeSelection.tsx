@@ -25,18 +25,18 @@ export function ModeSelection({ goal, onComplete }: ModeSelectionProps) {
                     </div>
                 </div>
                 <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight">
-                    Select Your <span className="text-secondary">Protocol</span>
+                    Select Your <span className="text-secondary">Level</span>
                 </h2>
                 <p className="text-white/60 text-lg max-w-xl mx-auto">
-                    AI has interpreted your goal: <span className="text-white italic">"{goal}"</span>. Now choose the intensity of the transformation.
+                    Based on your goal: <span className="text-white italic">&quot;{goal}&quot;</span>. How hard do you want to train?
                 </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Active Mode */}
                 <ModeCard
-                    title="Active Mode"
-                    description="Focus on maintenance, step targets, and consistency without strict constraints."
+                    title="Easy"
+                    description="Perfect for starting out. Stay active and build a habit without strict rules."
                     icon={<Activity className="w-6 h-6" />}
                     color="white"
                     onClick={() => onComplete("active")}
@@ -44,8 +44,8 @@ export function ModeSelection({ goal, onComplete }: ModeSelectionProps) {
 
                 {/* Intermediate Mode */}
                 <ModeCard
-                    title="Intermediate"
-                    description="Balanced progression. Moderate calorie deficits and structured training."
+                    title="Balanced"
+                    description="Move faster. A mix of steady progress and structured training sessions."
                     icon={<Shield className="w-6 h-6" />}
                     color="secondary"
                     highlight
@@ -54,8 +54,8 @@ export function ModeSelection({ goal, onComplete }: ModeSelectionProps) {
 
                 {/* Locked-In Mode */}
                 <ModeCard
-                    title="Locked-In"
-                    description="Maximum transformation. Aggressive targets and strict behavioral tracking."
+                    title="Elite"
+                    description="Maximum intensity. Strict targets and daily tracking for the best results."
                     icon={<Zap className="w-6 h-6" />}
                     color="accent"
                     onClick={() => onComplete("locked-in")}
@@ -101,7 +101,7 @@ function ModeCard({ title, description, icon, color, highlight, onClick }: any) 
             <p className="text-white/50 leading-relaxed mb-8 flex-grow">{description}</p>
 
             <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity translate-x--2 group-hover:translate-x-0">
-                Initiate <ArrowRight className="w-4 h-4" />
+                Start <ArrowRight className="w-4 h-4" />
             </div>
 
             {/* Background Glow */}
