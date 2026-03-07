@@ -96,6 +96,13 @@ export async function updateSession(request: NextRequest) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // New logic: If inviteCode is present but no user, and hitting root, go to login
+    if (!user && request.nextUrl.pathname === "/") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        return NextResponse.redirect(url);
+    }
+
     // Redirect logged-in users away from login page to the SMART ROOT
     if (user && request.nextUrl.pathname === "/login") {
         const url = request.nextUrl.clone();
