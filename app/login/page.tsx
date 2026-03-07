@@ -59,13 +59,13 @@ function LoginContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="w-full max-w-[320px] p-6 rounded-[2.5rem] bg-card border border-card-border shadow-2xl shadow-primary/5 space-y-6"
+                className="w-full max-w-md p-6 sm:p-8 rounded-[2.5rem] bg-card border border-card-border shadow-2xl shadow-primary/5 space-y-6"
             >
                 <div className="space-y-1">
                     <h2 className="text-lg font-black uppercase tracking-tight">
                         {isSignUp ? "Create Your Account" : "Welcome Back"}
                     </h2>
-                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest leading-relaxed">
+                    <p className="text-xs font-bold text-muted uppercase tracking-widest leading-relaxed">
                         {isSignUp
                             ? "Enter your details to start your journey."
                             : "Sign in to synchronize your progress."}
@@ -179,7 +179,7 @@ function LoginContent() {
                     </div>
                 </form>
 
-                <p className="text-[8px] font-bold text-muted/60 uppercase tracking-widest leading-loose">
+                <p className="text-[10px] font-bold text-muted/60 uppercase tracking-widest leading-loose">
                     By continuing, you agree to our terms and privacy policy.
                 </p>
             </motion.div>

@@ -86,7 +86,7 @@ export default function Home() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full max-w-sm p-10 rounded-[2.5rem] bg-card border border-card-border shadow-2xl relative z-10 space-y-8 text-center"
+                    className="w-full max-w-md p-10 rounded-[2.5rem] bg-card border border-card-border shadow-2xl relative z-10 space-y-8 text-center"
                 >
                     <div className="space-y-4">
                         <div className="w-16 h-16 bg-primary rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-primary/20">
@@ -94,7 +94,7 @@ export default function Home() {
                         </div>
                         <div className="space-y-1">
                             <h1 className="text-3xl font-black uppercase tracking-tight">FitMax AI</h1>
-                            <p className="text-[10px] text-muted font-black uppercase tracking-[0.3em]">Neural Fitness Intelligence</p>
+                            <p className="text-xs text-muted font-black uppercase tracking-[0.3em]">Neural Fitness Intelligence</p>
                         </div>
                     </div>
 
@@ -110,7 +110,7 @@ export default function Home() {
                         Sign In / Register
                     </button>
 
-                    <p className="text-[8px] font-black uppercase tracking-widest text-muted opacity-50">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted opacity-50">
                         Secure OAuth Authentication Active
                     </p>
                 </motion.div>

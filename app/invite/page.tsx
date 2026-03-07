@@ -34,13 +34,13 @@ function InviteContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="w-full max-w-[320px] p-6 rounded-[2.5rem] bg-card border border-card-border shadow-2xl shadow-primary/5 space-y-6"
+                className="w-full max-w-md p-6 sm:p-8 rounded-[2.5rem] bg-card border border-card-border shadow-2xl shadow-primary/5 space-y-6"
             >
                 <div className="space-y-1">
                     <h2 className="text-lg font-black uppercase tracking-tight">
                         Invitation Required
                     </h2>
-                    <p className="text-[10px] font-bold text-muted uppercase tracking-widest leading-relaxed">
+                    <p className="text-xs font-bold text-muted uppercase tracking-widest leading-relaxed">
                         Please enter your unique invitation code to continue.
                     </p>
                 </div>
@@ -67,7 +67,7 @@ function InviteContent() {
                     <div className="flex flex-col gap-2 w-full pt-2">
                         <button
                             type="submit"
-                            className="w-full py-3 rounded-xl bg-primary text-black font-black uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                            className="w-full py-4 rounded-xl bg-primary text-black font-black uppercase text-sm tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                             disabled={isLoading}
                         >
                             {isLoading ? "Verifying..." : "Access Platform"}
