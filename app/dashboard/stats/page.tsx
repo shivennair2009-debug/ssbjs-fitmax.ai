@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Flame, Footprints, TrendingUp, Loader2 } from "lucide-react";
 import { getWorkoutLogs } from "@/lib/actions";
 
+export const dynamic = "force-dynamic";
+
 export default function StatsPage() {
     const [tasksDone, setTasksDone] = useState(0);
     const [calories, setCalories] = useState(0);

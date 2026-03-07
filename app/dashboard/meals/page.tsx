@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Utensils, Plus, ChefHat, Loader2 } from "lucide-react";
 import { getMealLogs, logMeal, getUserProfile, getWorkoutLogs } from "@/lib/actions";
 
+export const dynamic = "force-dynamic";
+
 export default function MealsPage() {
     const [mealLogs, setMealLogs] = useState<any[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);

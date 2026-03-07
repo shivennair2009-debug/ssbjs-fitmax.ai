@@ -7,6 +7,8 @@ import { getUserProfile } from "@/lib/actions";
 
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default function WorkoutPlanPage() {
     const [weeklyPlan, setWeeklyPlan] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);

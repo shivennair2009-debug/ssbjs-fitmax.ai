@@ -6,6 +6,8 @@ import { Play, ChevronRight, CheckCircle2, Flame, Footprints, TrendingUp, Loader
 import Link from "next/link";
 import { getUserProfile, getWorkoutLogs } from "@/lib/actions";
 
+export const dynamic = "force-dynamic";
+
 export default function DashboardHome() {
     const [dailyExercises, setDailyExercises] = useState<any[]>([]);
     const [dailyFocus, setDailyFocus] = useState<string | null>(null);

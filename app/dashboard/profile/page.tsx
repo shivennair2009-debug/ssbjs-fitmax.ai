@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+
+export const dynamic = "force-dynamic";
 import {
     User,
     Flame,
