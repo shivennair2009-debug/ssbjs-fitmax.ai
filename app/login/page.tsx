@@ -8,20 +8,30 @@ import { useSearchParams } from "next/navigation";
 
 function LoginContent() {
     const searchParams = useSearchParams();
-    const error = searchParams?.get("error");
+    const initialError = searchParams?.get("error");
+    const [errorMsg, setErrorMsg] = useState<string | null>(initialError || null);
 
     const [isSignUp, setIsSignUp] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAction = async (formData: FormData) => {
         setIsLoading(true);
+        setErrorMsg(null);
+
         try {
-            if (isSignUp) {
-                await signup(formData);
-            } else {
-                await login(formData);
+            const res = isSignUp ? await signup(formData) : await login(formData);
+
+            if (res?.error) {
+                setErrorMsg(res.error);
+                setIsLoading(false);
             }
-        } finally {
+        } catch (e: any) {
+            // Next.js redirect throws an error that we must re-throw
+            if (e.message && e.message.includes("NEXT_REDIRECT")) {
+                throw e;
+            }
+            console.error(e);
+            setErrorMsg("An unexpected error occurred.");
             setIsLoading(false);
         }
     };
@@ -62,9 +72,9 @@ function LoginContent() {
                     </p>
                 </div>
 
-                {error && (
+                {errorMsg && (
                     <div className="p-3 text-xs text-red-500 bg-red-500/10 rounded-xl border border-red-500/20">
-                        {error}
+                        {errorMsg}
                     </div>
                 )}
 

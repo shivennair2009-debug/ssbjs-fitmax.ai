@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getUserProfile } from "@/lib/actions";
 
 export async function login(formData: FormData) {
     console.log("Login action started...");
@@ -14,27 +15,33 @@ export async function login(formData: FormData) {
     };
 
     console.log(`Attempting login for: ${data.email}`);
-    let redirectUrl: string;
 
     try {
         const { error } = await supabase.auth.signInWithPassword(data);
 
         if (error) {
             console.error("Supabase login error:", error.message);
-            redirectUrl = `/login?error=${encodeURIComponent(error.message)}`;
+            return { error: error.message };
         } else {
-            console.log("Login successful, redirecting to dispatcher...");
-            redirectUrl = "/";
+            console.log("Login successful, checking profile routing...");
+            const profile = await getUserProfile();
+            const hasPlan = profile && profile.workoutPlans && (profile.workoutPlans as any[]).length > 0;
+
+            if (hasPlan) {
+                revalidatePath("/", "layout");
+                redirect("/dashboard/home");
+            } else {
+                revalidatePath("/", "layout");
+                redirect("/?step=goal");
+            }
         }
     } catch (e: any) {
         console.error("Unexpected login error:", e);
-        redirectUrl = `/login?error=${encodeURIComponent("Authentication failed. Please try again.")}`;
+        return { error: "Authentication failed. Please try again." };
     }
 
-    if (redirectUrl === "/dashboard/home") {
-        revalidatePath("/", "layout");
-    }
-    redirect(redirectUrl);
+    revalidatePath("/", "layout");
+    redirect("/");
 }
 
 export async function signup(formData: FormData) {
@@ -49,7 +56,7 @@ export async function signup(formData: FormData) {
     const weight = parseFloat(formData.get("weight") as string);
 
     console.log(`Attempting signup for: ${email}`);
-    let redirectUrl: string;
+    let redirectUrl = "/";
 
     try {
         const { error } = await supabase.auth.signUp({
@@ -67,18 +74,16 @@ export async function signup(formData: FormData) {
 
         if (error) {
             console.error("Supabase signup error:", error.message);
-            redirectUrl = `/login?error=${encodeURIComponent(error.message)}`;
+            return { error: error.message };
         } else {
             console.log("Signup successful, redirecting to onboarding...");
             redirectUrl = "/?step=goal";
         }
     } catch (e: any) {
         console.error("Unexpected signup error:", e);
-        redirectUrl = `/login?error=${encodeURIComponent("An unexpected error occurred. Please try again.")}`;
+        return { error: "An unexpected error occurred. Please try again." };
     }
 
-    if (redirectUrl === "/dashboard/home" || redirectUrl === "/?step=goal") {
-        revalidatePath("/", "layout");
-    }
+    revalidatePath("/", "layout");
     redirect(redirectUrl);
 }
