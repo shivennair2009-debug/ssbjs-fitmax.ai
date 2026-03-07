@@ -39,9 +39,6 @@ export async function login(formData: FormData) {
         console.error("Unexpected login error:", e);
         return { error: "Authentication failed. Please try again." };
     }
-
-    revalidatePath("/", "layout");
-    redirect("/");
 }
 
 export async function signup(formData: FormData) {
@@ -85,5 +82,5 @@ export async function signup(formData: FormData) {
     }
 
     revalidatePath("/", "layout");
-    redirect(redirectUrl);
+    return { success: true, redirectUrl };
 }

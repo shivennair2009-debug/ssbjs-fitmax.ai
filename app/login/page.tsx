@@ -1,8 +1,8 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { motion } from "framer-motion";
-import { Zap, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Zap, Loader2, X } from "lucide-react";
 import { login, signup } from "./actions";
 import { useSearchParams } from "next/navigation";
 
@@ -21,45 +21,95 @@ function LoginContent() {
         try {
             const res = isSignUp ? await signup(formData) : await login(formData);
 
-            if (res?.error) {
+            if (res && 'error' in res && res.error) {
                 setErrorMsg(res.error);
                 setIsLoading(false);
+            } else if (res && 'success' in res && res.success && res.redirectUrl) {
+                // Hard redirect to force a full reload and hydrate the browser's Supabase client
+                window.location.href = res.redirectUrl;
             }
         } catch (e: any) {
-            // Next.js redirect throws an error that we must re-throw
-            if (e.message && e.message.includes("NEXT_REDIRECT")) {
-                throw e;
-            }
             console.error(e);
             setErrorMsg("An unexpected error occurred.");
             setIsLoading(false);
         }
     };
 
-    return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-8">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center relative overflow-hidden"
-            >
-                <Zap className="w-10 h-10 text-primary relative z-10" />
-                <div className="absolute inset-0 bg-primary blur-2xl opacity-20" />
-            </motion.div>
+    const [legalModalOpen, setLegalModalOpen] = useState<"tc" | "privacy" | null>(null);
 
-            <div className="space-y-2">
-                <h1 className="text-4xl font-black uppercase tracking-tighter leading-none italic">
+    const LegalModal = () => (
+        <AnimatePresence>
+            {legalModalOpen && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+                    onClick={() => setLegalModalOpen(null)}
+                >
+                    <motion.div
+                        initial={{ scale: 0.95, y: 20 }}
+                        animate={{ scale: 1, y: 0 }}
+                        exit={{ scale: 0.95, y: 20 }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full max-w-lg p-6 sm:p-8 bg-card border border-card-border rounded-3xl shadow-2xl relative"
+                    >
+                        <button
+                            onClick={() => setLegalModalOpen(null)}
+                            className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <div className="space-y-4 text-left">
+                            <h3 className="text-xl font-black uppercase tracking-widest text-primary">
+                                {legalModalOpen === "tc" ? "Terms & Conditions" : "Privacy Policy"}
+                            </h3>
+                            <div className="text-sm text-foreground/80 space-y-4 leading-relaxed">
+                                <p>
+                                    Welcome to FitMax AI. To provide you with highly personalized fitness and nutrition plans, we collect and process specific data points.
+                                </p>
+                                <div className="p-4 bg-black/20 rounded-xl border border-white/5 space-y-2">
+                                    <p className="font-bold text-white uppercase tracking-widest text-xs">Data We Collect:</p>
+                                    <ul className="list-disc pl-5 space-y-1 text-muted">
+                                        <li>Full Name</li>
+                                        <li>Email Address</li>
+                                        <li>Age / Date of Birth</li>
+                                        <li>Height & Weight</li>
+                                        <li>Workout Goals</li>
+                                        <li>Consistency & Activity Levels</li>
+                                    </ul>
+                                </div>
+                                <p>
+                                    We use this data exclusively to power the neural fitness engine, calibrate your daily plans, and synchronize your progress. Your data is securely encrypted and never sold to third parties. By using the app, you consent to this data processing.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+
+    return (
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-6">
+            <LegalModal />
+
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-1"
+            >
+                <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tighter leading-none italic">
                     FitMax <span className="text-primary italic">AI</span>
                 </h1>
-                <p className="text-xs font-bold text-muted uppercase tracking-[0.2em]">Unlock Your Peak Potential</p>
-            </div>
+                <p className="text-xs sm:text-sm font-bold text-muted uppercase tracking-[0.2em]">Unlock Your Peak Potential</p>
+            </motion.div>
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="w-full max-w-md p-6 sm:p-8 rounded-[2.5rem] bg-card border border-card-border shadow-2xl shadow-primary/5 space-y-6"
+                transition={{ delay: 0.1 }}
+                className="w-full max-w-lg p-6 sm:p-10 rounded-[2.5rem] bg-card border border-card-border shadow-2xl shadow-primary/5 space-y-8"
             >
                 <div className="space-y-1">
                     <h2 className="text-lg font-black uppercase tracking-tight">
@@ -183,14 +233,13 @@ function LoginContent() {
                     </div>
                 </form>
 
-                <p className="text-[10px] font-bold text-muted/60 uppercase tracking-widest leading-loose">
-                    By continuing, you agree to our terms and privacy policy.
-                </p>
+                <div className="pt-2 text-[10px] font-bold text-muted/60 uppercase tracking-widest leading-loose">
+                    By continuing, you agree to our{" "}
+                    <button type="button" onClick={() => setLegalModalOpen("tc")} className="text-primary hover:underline underline-offset-2">Terms & Conditions</button>
+                    {" "}and{" "}
+                    <button type="button" onClick={() => setLegalModalOpen("privacy")} className="text-primary hover:underline underline-offset-2">Privacy Policy</button>.
+                </div>
             </motion.div>
-
-            <div className="absolute bottom-8 left-0 right-0">
-                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-muted opacity-20">Secure Intelligence Active</p>
-            </div>
         </div>
     );
 }
