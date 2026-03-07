@@ -47,7 +47,8 @@ export default function Home() {
         };
 
         checkAuth();
-    }, [getUserProfile]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const nextStep = () => {
         if (step === "landing") setStep("goal");

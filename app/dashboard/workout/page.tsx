@@ -25,7 +25,8 @@ export default function WorkoutPlanPage() {
             }
         }
         loadData();
-    }, [getUserProfile]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (isLoading) {
         return (

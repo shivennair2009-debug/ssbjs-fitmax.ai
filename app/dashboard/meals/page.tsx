@@ -61,7 +61,8 @@ export default function MealsPage() {
             }
         }
         loadData();
-    }, [fetchRecommendation, getMealLogs, getUserProfile]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchRecommendation]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

@@ -23,7 +23,7 @@ export default function ChatPage() {
                         mode: profile.fitnessMode || "active",
                         currentPlan: profile.workoutPlans?.[0] || {},
                         workoutLogs: logs || [],
-                        mealLogs: [], // Placeholder for now
+                        mealLogs: [],
                     });
                 }
             } catch (error) {
@@ -33,7 +33,8 @@ export default function ChatPage() {
             }
         }
         loadData();
-    }, [getUserProfile, getWorkoutLogs]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handlePlanUpdate = async (weeklyPlan: any) => {
         if (!initialData?.currentPlan?.id) return;

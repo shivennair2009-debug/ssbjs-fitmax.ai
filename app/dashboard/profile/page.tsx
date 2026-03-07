@@ -201,7 +201,8 @@ export default function ProfilePage() {
         }
 
         loadData();
-    }, [router, supabase, getUserProfile, getWorkoutLogs]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [router, supabase]);
 
 
     const unlockedCount = achievements.filter((a) => a.unlocked).length;

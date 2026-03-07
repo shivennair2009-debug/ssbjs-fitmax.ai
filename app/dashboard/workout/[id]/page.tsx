@@ -38,7 +38,8 @@ export default function DailyWorkoutPage() {
             }
         }
         loadData();
-    }, [params.id, getUserProfile]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params.id]);
 
     if (isLoading) {
         return (

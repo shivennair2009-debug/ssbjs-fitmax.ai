@@ -68,7 +68,8 @@ export default function ExerciseActivePage() {
             }
         }
         loadData();
-    }, [currentIndex, getUserProfile]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex]);
 
     const currentExercise = dailyExercises[currentIndex];
     const totalExercises = dailyExercises.length;
@@ -138,7 +139,8 @@ export default function ExerciseActivePage() {
             });
             router.push("/dashboard/home");
         }
-    }, [currentIndex, totalExercises, router, dailyExercises, logWorkout]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex, totalExercises, router, dailyExercises]);
 
     const handleSkip = useCallback(async () => {
         setIsRestMode(false);
@@ -157,7 +159,8 @@ export default function ExerciseActivePage() {
             });
             router.push("/dashboard/home");
         }
-    }, [currentIndex, totalExercises, router, dailyExercises, logWorkout]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex, totalExercises, router, dailyExercises]);
 
     const handleFinishRest = useCallback(() => {
         setIsRestMode(false);
