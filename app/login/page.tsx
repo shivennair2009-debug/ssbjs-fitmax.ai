@@ -78,7 +78,11 @@ function LoginContent() {
                     </div>
                 )}
 
-                <form action={handleAction} className="space-y-3">
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    handleAction(formData);
+                }} className="space-y-3">
                     <div className="space-y-2">
                         {isSignUp && (
                             <>

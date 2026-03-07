@@ -21,6 +21,7 @@ export default function Home() {
     const [mode, setMode] = useState("");
     const [isCheckingProfile, setIsCheckingProfile] = useState(true);
     const [hasActivePlan, setHasActivePlan] = useState(false);
+    const [isNavigating, setIsNavigating] = useState(false);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -103,11 +104,15 @@ export default function Home() {
                     </p>
 
                     <button
-                        onClick={() => router.push("/login")}
-                        className="w-full py-5 rounded-2xl bg-primary text-black font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        onClick={() => {
+                            setIsNavigating(true);
+                            router.push("/login");
+                        }}
+                        disabled={isNavigating}
+                        className="w-full py-5 rounded-2xl bg-primary text-black font-black uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                     >
-                        <LogIn className="w-5 h-5" />
-                        Sign In / Register
+                        {isNavigating ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
+                        {isNavigating ? "Connecting..." : "Sign In / Register"}
                     </button>
 
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted opacity-50">

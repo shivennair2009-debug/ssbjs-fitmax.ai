@@ -19,7 +19,7 @@ export async function verifyInviteCode(formData: FormData) {
             path: "/",
         });
 
-        redirect("/");
+        redirect("/login");
     } else {
         redirect("/invite?error=" + encodeURIComponent("Invalid invitation code."));
     }

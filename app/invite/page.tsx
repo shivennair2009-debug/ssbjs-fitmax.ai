@@ -11,6 +11,20 @@ function InviteContent() {
     const error = searchParams?.get("error");
     const [isLoading, setIsLoading] = useState(false);
 
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+        const formData = new FormData(e.currentTarget);
+        try {
+            await verifyInviteCode(formData);
+        } catch (err: any) {
+            if (err.message && err.message.includes("NEXT_REDIRECT")) {
+                throw err;
+            }
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-8">
             <motion.div
@@ -51,7 +65,7 @@ function InviteContent() {
                     </div>
                 )}
 
-                <form action={(data) => { setIsLoading(true); verifyInviteCode(data); }} className="space-y-3">
+                <form onSubmit={handleSubmit} className="space-y-3">
                     <div className="space-y-2 relative">
                         <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                         <input
