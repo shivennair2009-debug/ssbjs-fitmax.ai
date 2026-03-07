@@ -72,6 +72,25 @@ export async function updateSession(request: NextRequest) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // Invite code logic
+    const inviteCode = request.cookies.get("fitmax_invite_code")?.value;
+    const isInviteRoute = request.nextUrl.pathname.startsWith("/invite");
+    const isApiRoute = request.nextUrl.pathname.startsWith("/api");
+    const isStaticAsset = request.nextUrl.pathname.startsWith("/_next") || request.nextUrl.pathname.includes(".");
+
+    if (!inviteCode && !isInviteRoute && !isApiRoute && !isStaticAsset) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/invite";
+        return NextResponse.redirect(url);
+    }
+
+    if (inviteCode === "r329hgk" && (request.nextUrl.pathname.startsWith("/dashboard/meals") || request.nextUrl.pathname.startsWith("/dashboard/chat"))) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dashboard/home";
+        url.searchParams.set("restricted", "true");
+        return NextResponse.redirect(url);
+    }
+
     // Redirect logged-in users away from login page
     if (user && request.nextUrl.pathname === "/login") {
         const url = request.nextUrl.clone();

@@ -23,6 +23,13 @@ export default function Home() {
     const [hasActivePlan, setHasActivePlan] = useState(false);
 
     useEffect(() => {
+        if (typeof window !== "undefined") {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get("step") === "goal") {
+                setStep("goal");
+            }
+        }
+
         const checkAuth = async () => {
             try {
                 const supabase = createClient();

@@ -70,14 +70,14 @@ export async function signup(formData: FormData) {
             redirectUrl = `/login?error=${encodeURIComponent(error.message)}`;
         } else {
             console.log("Signup successful, redirecting to onboarding...");
-            redirectUrl = "/";
+            redirectUrl = "/?step=goal";
         }
     } catch (e: any) {
         console.error("Unexpected signup error:", e);
         redirectUrl = `/login?error=${encodeURIComponent("An unexpected error occurred. Please try again.")}`;
     }
 
-    if (redirectUrl === "/dashboard/home") {
+    if (redirectUrl === "/dashboard/home" || redirectUrl === "/?step=goal") {
         revalidatePath("/", "layout");
     }
     redirect(redirectUrl);
