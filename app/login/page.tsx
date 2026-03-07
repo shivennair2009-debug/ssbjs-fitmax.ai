@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Loader2, X } from "lucide-react";
-import { login, signup } from "./actions";
+import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 
 function LoginContent() {
@@ -18,19 +18,56 @@ function LoginContent() {
         setIsLoading(true);
         setErrorMsg(null);
 
-        try {
-            const res = isSignUp ? await signup(formData) : await login(formData);
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+        const supabase = createClient();
 
-            if (res && 'error' in res && res.error) {
-                setErrorMsg(res.error);
-                setIsLoading(false);
-            } else if (res && 'success' in res && res.success && res.redirectUrl) {
-                // Hard redirect to force a full reload and hydrate the browser's Supabase client
-                window.location.href = res.redirectUrl;
+        try {
+            if (isSignUp) {
+                const name = formData.get("name") as string;
+                const dob = formData.get("dob") as string;
+                const height = formData.get("height") as string;
+                const weight = formData.get("weight") as string;
+
+                const { error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            full_name: name,
+                            dob: dob,
+                            height: height ? parseFloat(height) : undefined,
+                            weight: weight ? parseFloat(weight) : undefined,
+                        }
+                    }
+                });
+
+                if (error) {
+                    setErrorMsg(error.message);
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Success: Force browser navigation to hydrate server
+                window.location.href = "/?step=goal";
+            } else {
+                const { error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) {
+                    setErrorMsg(error.message);
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Success: Force browser navigation to hydrate server
+                window.location.href = "/";
             }
         } catch (e: any) {
             console.error(e);
-            setErrorMsg("An unexpected error occurred.");
+            setErrorMsg(e.message || "An unexpected error occurred.");
             setIsLoading(false);
         }
     };
@@ -195,11 +232,10 @@ function LoginContent() {
                             <>
                                 <button
                                     type="submit"
-                                    className="w-full py-3 rounded-xl bg-primary text-black font-black uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full py-4 rounded-xl bg-primary text-black font-black uppercase text-sm tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center h-14"
                                     disabled={isLoading}
                                 >
-                                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {isLoading ? "Synchronizing..." : "Log In"}
+                                    {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Log In"}
                                 </button>
                                 <button
                                     type="button"
@@ -214,11 +250,10 @@ function LoginContent() {
                             <>
                                 <button
                                     type="submit"
-                                    className="w-full py-3 rounded-xl bg-primary text-black font-black uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full py-4 rounded-xl bg-primary text-black font-black uppercase text-sm tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center h-14"
                                     disabled={isLoading}
                                 >
-                                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {isLoading ? "Creating Identity..." : "Get Started"}
+                                    {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Create Account"}
                                 </button>
                                 <button
                                     type="button"
