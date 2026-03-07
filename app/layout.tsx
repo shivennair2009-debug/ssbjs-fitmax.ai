@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { MobileLayout } from "@/components/ui/MobileLayout";
+import { Providers } from "@/components/Providers";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,11 +19,9 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${inter.className} min-h-screen antialiased selection:bg-primary selection:text-black`}>
-                <ThemeProvider>
-                    <MobileLayout>
-                        {children}
-                    </MobileLayout>
-                </ThemeProvider>
+                <Providers>
+                    {children}
+                </Providers>
             </body>
         </html>
     );

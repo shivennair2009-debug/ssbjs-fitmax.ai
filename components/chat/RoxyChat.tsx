@@ -10,7 +10,21 @@ type Message = {
     content: string;
 };
 
-export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPlanUpdate: (weeklyPlan: any) => void }) {
+export function RoxyChat({
+    onClose,
+    onPlanUpdate,
+    initialData
+}: {
+    onClose: () => void;
+    onPlanUpdate: (weeklyPlan: any) => void;
+    initialData: {
+        goal: string;
+        mode: string;
+        currentPlan: any;
+        workoutLogs: any[];
+        mealLogs: any[];
+    }
+}) {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: "assistant",
@@ -32,14 +46,7 @@ export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPla
         setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
         setIsSending(true);
 
-        const goal = localStorage.getItem("fitnessGoal") || "";
-        const mode = (localStorage.getItem("fitnessMode") || "intermediate") as
-            | "active"
-            | "intermediate"
-            | "locked-in";
-        const currentPlan = JSON.parse(localStorage.getItem("currentWorkoutPlan") || "{}");
-        const workoutLogs = JSON.parse(localStorage.getItem("workoutLogs") || "[]");
-        const mealLogs = JSON.parse(localStorage.getItem("mealLogs") || "[]");
+        const { goal, mode, currentPlan, workoutLogs, mealLogs } = initialData;
 
         try {
             const response = await fetch("/api/roxy-chat", {
@@ -52,6 +59,7 @@ export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPla
                     workoutLogs,
                     mealLogs,
                     message: userMessage,
+                    planId: currentPlan?.id
                 }),
             });
 
@@ -63,11 +71,6 @@ export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPla
             setMessages((prev) => [...prev, { role: "assistant", content: data.message || "Got it." }]);
 
             if (data.shouldRecalibrate && data.weeklyPlan) {
-                const updatedPlan = {
-                    ...currentPlan,
-                    weeklyPlan: data.weeklyPlan,
-                };
-                localStorage.setItem("currentWorkoutPlan", JSON.stringify(updatedPlan));
                 onPlanUpdate(data.weeklyPlan);
             }
         } catch {
@@ -96,7 +99,7 @@ export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPla
                 </div>
                 <button
                     onClick={onClose}
-                    className="p-3 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 active:scale-90 transition-all"
+                    className="p-3 rounded-full bg-foreground/5 border border-foreground/10 hover:bg-foreground/10 active:scale-90 transition-all"
                 >
                     <X className="w-6 h-6" />
                 </button>
@@ -138,7 +141,7 @@ export function RoxyChat({ onClose, onPlanUpdate }: { onClose: () => void; onPla
                         className={cn(
                             "w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg",
                             isSending || !input.trim()
-                                ? "bg-white/5 text-white/20"
+                                ? "bg-foreground/5 text-muted"
                                 : "bg-primary text-black shadow-primary/20 active:scale-90"
                         )}
                     >

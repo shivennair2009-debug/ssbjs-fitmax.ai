@@ -1,145 +1,248 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-    Zap as ZapIcon,
-    ChevronRight,
-    Clock as ClockIcon,
-    Play
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Play, ChevronRight, CheckCircle2, Flame, Footprints, TrendingUp, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { getUserProfile, getWorkoutLogs } from "@/lib/actions";
 
 export default function DashboardHome() {
     const [dailyExercises, setDailyExercises] = useState<any[]>([]);
     const [dailyFocus, setDailyFocus] = useState<string | null>(null);
+    const [planName, setPlanName] = useState<string>("");
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Stats data
+    const [tasksDone, setTasksDone] = useState(0);
+    const [calories, setCalories] = useState(0);
+    const [steps, setSteps] = useState(0);
+    const [streak, setStreak] = useState(0);
+
+    /* Day Ring Layout calculation fields */
+    const days = ["D1", "D2", "D3", "D4", "D5", "D6", "D7"];
+    const [activeDayIndex, setActiveDayIndex] = useState(0);
+    const [doneNames, setDoneNames] = useState<Set<string>>(new Set());
 
     useEffect(() => {
-        const stored = localStorage.getItem("currentWorkoutPlan");
-        if (stored) {
-            const plan = JSON.parse(stored);
-            const schedule = plan.weeklyPlan || [];
-            const startDate = localStorage.getItem("planStartDate");
+        async function loadData() {
+            try {
+                const profile = await getUserProfile();
+                const logs = await getWorkoutLogs();
 
-            const computeDateIndex = (startDateISO: string | null) => {
-                if (!startDateISO) return 0;
-                const start = new Date(startDateISO);
-                const now = new Date();
-                const diffMs = now.getTime() - start.getTime();
-                return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-            };
+                if (profile && profile.workoutPlans?.[0]) {
+                    const plan = profile.workoutPlans[0];
+                    setPlanName(plan.planName);
 
-            const todayIndex = computeDateIndex(startDate) % schedule.length;
-            const todayPlan = schedule[todayIndex];
+                    const start = new Date(plan.startDate);
+                    const now = new Date();
+                    const diffMs = now.getTime() - start.getTime();
+                    const totalDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 
-            if (todayPlan) {
-                setDailyExercises(todayPlan.exercises || []);
-                setDailyFocus(todayPlan.focus || null);
+                    const weekIndex = Math.floor(totalDays / 7);
+                    const dayInWeekIndex = totalDays % 7;
+                    setActiveDayIndex(dayInWeekIndex);
+
+                    let todayPlan = null;
+                    if (weekIndex === 0) {
+                        const schedule = (plan.weeklyPlan as any[]) || [];
+                        todayPlan = schedule[dayInWeekIndex];
+                    } else if (weekIndex > 0) {
+                        const monthly = (plan.monthlyPlan as any[]) || [];
+                        const currentWeek = monthly[weekIndex - 1]; // monthlyPlan is Weeks 2, 3, 4
+                        if (currentWeek && currentWeek.days) {
+                            todayPlan = currentWeek.days[dayInWeekIndex];
+                        }
+                    }
+
+                    if (todayPlan) {
+                        setDailyExercises(todayPlan.exercises || []);
+                        setDailyFocus(todayPlan.focus || null);
+                    }
+                }
+
+                // Process stats from logs safely
+                const completedLogs = (logs || []).filter((l: any) => l.completed);
+                setTasksDone(completedLogs.length);
+                setCalories(completedLogs.length * 35);
+                setSteps(2000 + completedLogs.length * 800);
+
+                // Set of exercises completed today specifically
+                const todayStr = new Date().toISOString().slice(0, 10);
+                const todayDone = new Set<string>(
+                    (logs || [])
+                        .filter((l: any) => l.date && new Date(l.date).toISOString().slice(0, 10) === todayStr)
+                        .flatMap((l: any) => (l.exercises as any[] || []).map((e: any) => e.name as string))
+                );
+                setDoneNames(todayDone);
+
+                // Calculate streak
+                const daysWithActivity = new Set(
+                    (logs || []).map((l: any) => l.date ? new Date(l.date).toISOString().slice(0, 10) : "")
+                );
+                daysWithActivity.delete("");
+
+                let streakCount = 0;
+                const today = new Date();
+                for (let i = 0; i < 30; i++) {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() - i);
+                    const key = d.toISOString().slice(0, 10);
+                    if (daysWithActivity.has(key)) {
+                        streakCount++;
+                    } else if (i === 0) {
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+                setStreak(streakCount);
+
+            } catch (error) {
+                console.error("CRITICAL: Dashboard Data Load Failed", error);
+            } finally {
+                setIsLoading(false);
             }
         }
+
+        loadData();
     }, []);
 
-    const currentExercise = dailyExercises[0];
+    const nextTask = dailyExercises.find((ex) => !doneNames.has(ex.name)) || dailyExercises[0];
+    const nextTaskIndex = dailyExercises.findIndex((ex) => !doneNames.has(ex.name));
+
+    if (isLoading) {
+        return (
+            <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4 text-muted">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]">Synchronizing Routine...</p>
+            </div>
+        );
+    }
+
 
     return (
-        <div className="p-6 space-y-8">
-            {/* Hero Section */}
-            <section className="space-y-6">
-                <header className="space-y-2">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Plan Status: Active</p>
-                    <h1 className="text-4xl font-black uppercase tracking-tight leading-none">
-                        Welcome back, <br /> <span className="text-primary italic">Athlete</span>
+        <div className="p-4 space-y-5 pb-24">
+
+            {/* Header */}
+            <header className="space-y-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary px-1">Active Routine</p>
+                <div className="flex justify-between items-end">
+                    <h1 className="text-2xl font-black uppercase tracking-tight leading-none text-foreground dark:text-white px-1">
+                        {planName || "Welcome Back"}
                     </h1>
-                </header>
+                </div>
+            </header>
 
-                {/* Main Action Card */}
-                {currentExercise ? (
+            {/* Top Navigation Activity Day Rings */}
+            <div className="flex justify-between px-2 pt-1 pb-1">
+                {days.map((d, index) => {
+                    const isActive = index === activeDayIndex;
+                    const isPast = index < activeDayIndex;
+                    return (
+                        <div key={index} className="flex flex-col items-center gap-1.5 grayscale-0 transition-all">
+                            <span className="text-[10px] font-bold text-muted uppercase leading-none">{d}</span>
+                            <div className={`w-8 h-8 rounded-full border-[3px] flex items-center justify-center transition-all ${isActive ? 'border-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)] bg-primary/10' : isPast ? 'border-primary/50 opacity-80' : 'border-card-border opacity-40'}`}>
+                                {isPast ? <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> : isActive && (
+                                    <motion.div layoutId="activeDayRing" className="w-2.5 h-2.5 bg-primary rounded-full shadow-md" />
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Up Next Core Component */}
+            {nextTask ? (
+                <section className="space-y-1.5 px-1">
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted">Up Next</p>
                     <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        className="p-8 rounded-[2.5rem] bg-card border border-card-border shadow-2xl shadow-primary/5 space-y-6 relative overflow-hidden group"
+                        whileTap={{ scale: 0.98 }}
+                        className="p-5 rounded-[1.8rem] bg-card border border-card-border shadow-xl shadow-primary/5 relative overflow-hidden"
                     >
-                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <ZapIcon className="w-24 h-24 text-primary fill-current" />
-                        </div>
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/15 blur-2xl rounded-full -mr-10 -mt-10" />
 
-                        <div className="space-y-2 relative z-10">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted">Up Next Today</p>
-                            <h2 className="text-3xl font-black uppercase text-white leading-tight">{currentExercise.name}</h2>
-                            <p className="text-sm font-bold text-primary/80 uppercase tracking-widest italic">{dailyFocus || 'Strength Session'}</p>
-                        </div>
-
-                        <div className="flex items-center justify-between relative z-10">
-                            <div className="flex gap-4">
-                                <div className="space-y-1">
-                                    <p className="text-[8px] font-black text-muted uppercase">Target</p>
-                                    <p className="text-xs font-black italic">{currentExercise.reps}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[8px] font-black text-muted uppercase">Sets</p>
-                                    <p className="text-xs font-black italic">{currentExercise.sets || 3}</p>
-                                </div>
+                        <div className="relative z-10 space-y-3">
+                            <div className="space-y-0.5">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-primary">
+                                    {dailyFocus || "Today's Task"}
+                                </p>
+                                <h2 className="text-xl font-black uppercase leading-tight line-clamp-1">
+                                    {nextTask.name}
+                                </h2>
+                                <p className="text-[10px] text-muted font-bold">
+                                    {nextTask.sets || 3} sets · {nextTask.reps}
+                                </p>
                             </div>
 
-                            <Link
-                                href="/dashboard/exercise/0"
-                                className="w-14 h-14 rounded-2xl bg-primary text-black flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform"
-                            >
-                                <Play className="w-6 h-6 fill-current" />
-                            </Link>
+                            <div className="flex gap-2 pt-1">
+                                <Link
+                                    href={`/dashboard/exercise/${Math.max(0, nextTaskIndex)}`}
+                                    className="flex-1 py-1.5 flex items-center justify-center gap-1.5 rounded-xl bg-primary text-black text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95"
+                                >
+                                    <Play className="w-3.5 h-3.5 fill-current" />
+                                    Start
+                                </Link>
+                                <Link
+                                    href="/dashboard/workout"
+                                    className="px-4 py-1.5 flex items-center justify-center gap-1 rounded-xl border border-card-border text-[10px] font-black uppercase tracking-widest hover:bg-black/5 active:scale-95"
+                                >
+                                    View All
+                                </Link>
+                            </div>
                         </div>
                     </motion.div>
-                ) : (
-                    <div className="p-8 rounded-[2.5rem] bg-card border border-dashed border-white/10 flex items-center justify-center text-center">
-                        <p className="text-muted text-xs font-black uppercase tracking-widest">No exercises assigned yet.</p>
+                </section>
+            ) : (
+                <div className="p-5 px-1">
+                    <div className="p-5 rounded-[1.5rem] bg-card border border-dashed border-card-border text-center space-y-1">
+                        <CheckCircle2 className="w-6 h-6 text-primary mx-auto opacity-80" />
+                        <p className="font-black uppercase text-xs">All done today!</p>
                     </div>
-                )}
-            </section>
-
-            {/* Horizontal Exercises List */}
-            <section className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted flex items-center gap-2">
-                        <ClockIcon className="w-4 h-4" />
-                        Today&apos;s Full Session
-                    </h3>
-                    <span className="text-[10px] font-black text-primary">{dailyExercises.length} Tasks</span>
                 </div>
+            )}
 
-                <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-6 px-6">
-                    {dailyExercises.map((exercise, idx) => (
-                        <motion.div
-                            key={`${exercise.name}-${idx}`}
-                            whileTap={{ scale: 0.95 }}
-                            className="min-w-[200px] p-5 rounded-3xl bg-card border border-card-border space-y-3 shrink-0"
-                        >
-                            <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-[10px] font-black">{idx + 1}</div>
-                            <div className="space-y-1">
-                                <h4 className="text-xs font-black uppercase line-clamp-1">{exercise.name}</h4>
-                                <p className="text-[10px] text-muted font-bold tracking-tight">{exercise.reps} · {exercise.sets || 3} sets</p>
-                            </div>
-                            <Link
-                                href={`/dashboard/exercise/${idx}`}
-                                className="text-[10px] font-black uppercase text-primary tracking-widest block pt-2"
-                            >
-                                View Details
-                            </Link>
-                        </motion.div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Quick Stats Grid */}
-            <section className="grid grid-cols-2 gap-4 pb-12">
-                <div className="p-5 rounded-3xl bg-card border border-card-border space-y-1">
-                    <p className="text-[8px] font-black text-muted uppercase tracking-widest">Streak</p>
-                    <p className="text-xl font-black">12 <span className="text-[10px] text-primary italic">DAYS</span></p>
-                </div>
-                <div className="p-5 rounded-3xl bg-card border border-card-border space-y-1">
-                    <p className="text-[8px] font-black text-muted uppercase tracking-widest">Readiness</p>
-                    <p className="text-xl font-black text-secondary uppercase italic">Elite</p>
+            {/* Stats Overview */}
+            <section className="space-y-2 px-1 pt-1">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted">Your Overview</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <StatTile
+                        icon={<CheckCircle2 className="w-5 h-5 text-primary" />}
+                        label="Tasks Crushed" value={tasksDone.toString()} unit="TOTAL"
+                    />
+                    <StatTile
+                        icon={<Flame className="w-5 h-5 text-accent" />}
+                        label="Calories" value={calories.toString()} unit="KCAL EST."
+                    />
+                    <StatTile
+                        icon={<Footprints className="w-5 h-5 text-secondary" />}
+                        label="Steps" value={steps.toLocaleString()} unit="EST."
+                    />
+                    <StatTile
+                        icon={<TrendingUp className="w-5 h-5 text-foreground dark:text-white" />}
+                        label="Streak" value={streak.toString()} unit="DAYS"
+                    />
                 </div>
             </section>
         </div>
+    );
+}
+
+function StatTile({ icon, label, value, unit }: any) {
+    return (
+        <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="p-5 rounded-3xl bg-card border border-card-border space-y-3"
+        >
+            <div className="w-9 h-9 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center">
+                {icon}
+            </div>
+            <div className="space-y-0.5">
+                <p className="text-[8px] font-black text-muted uppercase tracking-widest">{label}</p>
+                <p className="text-2xl font-black tracking-tight leading-none">
+                    {value} <span className="text-[9px] text-muted font-black">{unit}</span>
+                </p>
+            </div>
+        </motion.div>
     );
 }

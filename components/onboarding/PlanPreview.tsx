@@ -2,16 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import {
-    Dna,
-    Brain,
-    LineChart,
-    ArrowRight,
-    ShieldCheck,
-    Zap,
-    Activity,
-    AlertCircle
-} from "lucide-react";
+import { Dna, ArrowRight, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PlanPreviewProps {
@@ -19,39 +10,6 @@ interface PlanPreviewProps {
     mode: string;
     onComplete: () => void;
 }
-
-const SLIDES = [
-    {
-        id: "baseline",
-        title: "Starting Point",
-        subtitle: "Analysis Complete",
-        description: "I've checked your goals. We've set your starting points for fitness and nutrition.",
-        icon: <Dna className="w-12 h-12" />,
-        color: "primary",
-        stat: "Level 1.4",
-        statLabel: "Ready to Start"
-    },
-    {
-        id: "protocol",
-        title: "Personal Plan",
-        subtitle: "Daily Action Plan",
-        description: "Focusing on steady progress and the best exercises for your specific goal.",
-        icon: <ShieldCheck className="w-12 h-12" />,
-        color: "secondary",
-        stat: "15%",
-        statLabel: "Better Every Week"
-    },
-    {
-        id: "loop",
-        title: "Smart Adjustments",
-        subtitle: "Always Learning",
-        description: "I'll watch your progress 24/7. Your plan shifts automatically to make sure you keep getting results.",
-        icon: <Brain className="w-12 h-12" />,
-        color: "accent",
-        stat: "24/7",
-        statLabel: "AI Active"
-    }
-];
 
 const LOADING_STEPS = [
     { min: 0, label: "Analyzing goals" },
@@ -82,7 +40,7 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
                         goal,
                         mode,
                         userContext: {
-                            daysPerWeek: 4,
+                            daysPerWeek: 7,
                         },
                     }),
                 });
@@ -93,15 +51,6 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
 
                 const plan = await response.json();
                 setWorkoutPlan(plan);
-
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("currentWorkoutPlan", JSON.stringify(plan));
-                    localStorage.setItem("fitnessGoal", goal);
-                    localStorage.setItem("fitnessMode", mode);
-                    if (!localStorage.getItem("planStartDate")) {
-                        localStorage.setItem("planStartDate", new Date().toISOString());
-                    }
-                }
             } catch (err) {
                 console.error("Error generating plan:", err);
                 setError(
@@ -124,8 +73,8 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
 
         setLoadingProgress(8);
         const interval = setInterval(() => {
-            setLoadingProgress((prev) => Math.min(prev + Math.floor(Math.random() * 7) + 4, 95));
-        }, 900);
+            setLoadingProgress((prev) => Math.min(prev + Math.floor(Math.random() * 5) + 2, 98));
+        }, 800);
 
         return () => clearInterval(interval);
     }, [isLoading]);
@@ -136,35 +85,21 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
     }, [loadingProgress]);
 
     const next = () => {
-        if (currentSlide < SLIDES.length - 1) {
+        if (currentSlide < 2) {
             setCurrentSlide(currentSlide + 1);
         } else {
             onComplete();
         }
     };
 
-    const slide = SLIDES[currentSlide];
-
-    const colorMap: any = {
-        primary: "text-primary border-primary/20",
-        secondary: "text-secondary border-secondary/20",
-        accent: "text-accent border-accent/20",
-    };
-
-    const bgMap: any = {
-        primary: "bg-primary",
-        secondary: "bg-secondary",
-        accent: "bg-accent",
-    };
-
     if (error) {
         return (
-            <div className="flex flex-col h-full bg-black items-center justify-center p-8">
+            <div className="flex flex-col h-full bg-background items-center justify-center p-8">
                 <div className="text-center space-y-6 max-w-md">
                     <AlertCircle className="w-16 h-16 text-accent mx-auto" />
                     <h2 className="text-2xl font-black uppercase">Generation Error</h2>
-                    <p className="text-white/60">{error}</p>
-                    <p className="text-xs text-white/40">
+                    <p className="text-foreground/80">{error}</p>
+                    <p className="text-xs text-muted">
                         Make sure you have set up the GEMINI_API_KEY in your .env.local file.
                     </p>
                     <button
@@ -180,112 +115,177 @@ export function PlanPreview({ goal, mode, onComplete }: PlanPreviewProps) {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col h-full bg-black items-center justify-center p-8">
-                <motion.div className="text-center space-y-8">
-                    <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="w-16 h-16 rounded-full border-2 border-primary border-t-transparent mx-auto"
-                    />
-                    <div className="space-y-3">
-                        <h2 className="text-2xl font-black uppercase">Creating Your Plan</h2>
-                        <p className="text-white/60">{loadingLabel}</p>
-                        <p className="text-white/40 text-xs font-black uppercase tracking-[0.3em]">{loadingProgress}%</p>
+            <div className="flex flex-col h-full bg-background items-center justify-center p-8 relative overflow-hidden">
+                {/* Background decorative elements */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full" />
+
+                <motion.div className="text-center space-y-12 relative z-10">
+                    <div className="relative w-32 h-32 mx-auto">
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                            className="absolute inset-0 rounded-full border-b-2 border-primary"
+                        />
+                        <motion.div
+                            animate={{ rotate: -360 }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                            className="absolute inset-4 rounded-full border-t-2 border-secondary/50"
+                        />
+                        <motion.div
+                            animate={{ scale: [1, 1.1, 1] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            className="absolute inset-0 flex items-center justify-center"
+                        >
+                            <Dna className="w-10 h-10 text-primary" />
+                        </motion.div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <h2 className="text-3xl font-black uppercase tracking-tight">Synthesizing</h2>
+                            <p className="text-primary font-black uppercase tracking-[0.3em] text-[10px]">{loadingLabel}</p>
+                        </div>
+
+                        <div className="w-48 h-1 bg-foreground/10 rounded-full mx-auto overflow-hidden">
+                            <motion.div
+                                className="h-full bg-primary"
+                                initial={{ width: "0%" }}
+                                animate={{ width: `${loadingProgress}%` }}
+                                transition={{ duration: 0.5 }}
+                            />
+                        </div>
+                        <p className="text-muted text-[10px] font-black">{loadingProgress}% COMPLETE</p>
                     </div>
                 </motion.div>
             </div>
         );
     }
 
+    // Helper to get slide content dynamically based on currentSlide and workoutPlan
+    const getSlideContent = () => {
+        if (!workoutPlan) return null;
+
+        if (currentSlide === 0) {
+            // Slide 1: Program Name and Overview
+            return (
+                <div className="flex flex-col items-center">
+                    <div className="p-8 rounded-[2.5rem] border bg-foreground/5 mb-8 text-primary border-primary/20">
+                        <Dna className="w-12 h-12" />
+                    </div>
+                    <p className="text-xs font-black uppercase tracking-[0.4em] mb-2 text-primary border-primary/20">
+                        Analysis Complete
+                    </p>
+                    <h2 className="text-4xl font-black uppercase tracking-tight leading-none mb-6">
+                        {workoutPlan.planName || "Your Program"}
+                    </h2>
+                    <p className="text-foreground/80 text-sm leading-relaxed max-w-sm mx-auto">
+                        {workoutPlan.overview || "Your personalized strategy is ready."}
+                    </p>
+                </div>
+            );
+        }
+
+        if (currentSlide === 1) {
+            // Slide 2: Today's Tasks
+            const todayTasks = workoutPlan.weeklyPlan?.[0]?.exercises || [];
+            return (
+                <div className="flex flex-col items-center w-full max-h-[60vh] overflow-hidden">
+                    <p className="text-xs font-black uppercase tracking-[0.4em] mb-2 text-secondary">
+                        {workoutPlan.planName}
+                    </p>
+                    <h2 className="text-3xl font-black uppercase tracking-tight leading-none mb-6">
+                        Today&apos;s Tasks
+                    </h2>
+
+                    <div className="w-full overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                        {todayTasks.map((task: any, idx: number) => (
+                            <div key={idx} className="bg-foreground/5 border border-foreground/10 p-4 rounded-2xl flex flex-col items-start text-left shrink-0">
+                                <h4 className="font-bold text-lg leading-tight mb-1">{task.name}</h4>
+                                <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-muted mb-2">
+                                    <span>{task.sets} Sets</span>
+                                    <span>•</span>
+                                    <span>{task.reps}</span>
+                                </div>
+                                <p className="text-sm text-foreground/80 leading-relaxed">
+                                    {task.notes}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        if (currentSlide === 2) {
+            // Slide 3: Monthly Overview
+            const phases = workoutPlan.phases || [];
+            return (
+                <div className="flex flex-col items-center w-full max-h-[60vh] overflow-hidden">
+                    <p className="text-xs font-black uppercase tracking-[0.4em] mb-2 text-accent">
+                        {workoutPlan.planName}
+                    </p>
+                    <h2 className="text-3xl font-black uppercase tracking-tight leading-none mb-6">
+                        Monthly Path
+                    </h2>
+
+                    <div className="w-full overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                        {phases.map((phase: any, idx: number) => (
+                            <div key={idx} className="bg-foreground/5 border border-foreground/10 p-5 rounded-2xl flex flex-col items-start text-left shrink-0 border-l-4 border-l-accent">
+                                <span className="text-xs font-black uppercase tracking-widest text-accent mb-1">
+                                    {phase.duration}
+                                </span>
+                                <h4 className="font-black text-xl mb-2">{phase.name}</h4>
+                                <p className="text-sm text-foreground/80 leading-relaxed mb-3">
+                                    {phase.focus}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        return null;
+    };
+
     return (
-        <div className="flex flex-col h-full bg-black">
-            <div className="p-8 pb-0 flex justify-between items-center">
+        <div className="flex flex-col h-full bg-background relative">
+            <div className="p-8 pb-0 flex justify-between items-center z-10">
                 <div className="flex gap-1.5">
-                    {SLIDES.map((_, i) => (
+                    {[0, 1, 2].map((i) => (
                         <div
                             key={i}
                             className={cn(
-                                "h-1 rounded-full bg-white/10 transition-all duration-500",
-                                i === currentSlide ? "w-8 bg-white" : "w-4"
+                                "h-1 rounded-full transition-all duration-500",
+                                i === currentSlide ? "w-8 bg-foreground" : "w-4 bg-foreground/20"
                             )}
                         />
                     ))}
                 </div>
-                <button onClick={onComplete} className="text-[10px] uppercase font-bold text-white/40 tracking-widest hover:text-white">Skip</button>
+                <button onClick={onComplete} className="text-[10px] uppercase font-bold text-foreground/50 tracking-[0.2em] hover:text-foreground">Skip</button>
             </div>
 
-            <div className="flex-grow flex items-center justify-center p-8">
-                <AnimatePresence mode="wait">
+            <div className="flex-grow flex flex-col p-8 overflow-hidden z-10 w-full">
+                <AnimatePresence mode="popLayout">
                     <motion.div
                         key={currentSlide}
-                        initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 1.1, y: -10 }}
-                        className="w-full text-center space-y-12"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full flex-grow flex flex-col justify-center"
                     >
-                        <div className="flex flex-col items-center">
-                            <div
-                                className={cn(
-                                    "p-8 rounded-[2.5rem] border bg-white/5 mb-8",
-                                    colorMap[slide.color]
-                                )}
-                            >
-                                {slide.icon}
-                            </div>
-                            <p
-                                className={cn(
-                                    "text-xs font-black uppercase tracking-[0.4em] mb-2",
-                                    colorMap[slide.color]
-                                )}
-                            >
-                                {slide.subtitle}
-                            </p>
-                            <h2 className="text-4xl font-black uppercase tracking-tight leading-none mb-6">
-                                {slide.title}
-                            </h2>
-                            <p className="text-white/50 text-sm leading-relaxed max-w-xs mx-auto">
-                                {slide.description}
-                            </p>
-
-                            {currentSlide === 0 && workoutPlan && (
-                                <div className="mt-8 space-y-3 text-left bg-white/5 p-6 rounded-2xl border border-white/10">
-                                    <p className="text-xs font-bold uppercase text-primary">
-                                        Your Workout
-                                    </p>
-                                    <h3 className="text-lg font-black">
-                                        {workoutPlan.planName || "Personalized Program"}
-                                    </h3>
-                                    <p className="text-white/60 text-sm">
-                                        {workoutPlan.overview}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4">
-                            <div className="p-6 rounded-3xl bg-white/5 border border-white/5 flex flex-col items-center">
-                                <span className="text-4xl font-black italic">
-                                    {slide.stat}
-                                </span>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
-                                    {slide.statLabel}
-                                </span>
-                            </div>
-                        </div>
+                        {getSlideContent()}
                     </motion.div>
                 </AnimatePresence>
             </div>
 
-            <div className="p-8 pt-0">
+            <div className="p-8 pt-0 z-10 w-full">
                 <button
                     onClick={next}
-                    className={cn(
-                        "w-full py-6 rounded-2xl font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2 transition-all group",
-                        bgMap[slide.color],
-                        "text-black"
-                    )}
+                    className="w-full py-5 rounded-2xl font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2 transition-all group bg-foreground text-background"
                 >
-                    {currentSlide === SLIDES.length - 1 ? "Start Training" : "Continue"}
+                    {currentSlide === 2 ? "Start Training" : "Continue"}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>

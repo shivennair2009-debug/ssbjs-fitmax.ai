@@ -10,9 +10,11 @@ import {
     ChevronRight,
     Volume2,
     AlertCircle,
-    X
+    X,
+    Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logWorkout } from "@/lib/actions";
 
 interface Exercise {
     id: string;
@@ -61,6 +63,7 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
     const [exercises, setExercises] = useState<Exercise[]>(initialExercises?.length ? initialExercises : DEFAULT_EXERCISES);
     const [fitnessMode, setFitnessMode] = useState<"active" | "intermediate" | "locked-in">("intermediate");
     const [perceivedEffort, setPerceivedEffort] = useState(3);
+    const [isLogging, setIsLogging] = useState(false);
 
     const currentExercise = exercises[currentIdx];
     useEffect(() => {
@@ -70,39 +73,7 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
         }
     }, [initialExercises, initialExerciseIndex]);
 
-    // Load plan from localStorage on mount
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const savedPlan = localStorage.getItem("currentWorkoutPlan");
-            const savedMode = localStorage.getItem("fitnessMode");
-
-            if (savedMode) {
-                setFitnessMode(savedMode as any);
-            }
-
-            if (savedPlan) {
-                try {
-                    const plan = JSON.parse(savedPlan);
-                    // Extract exercises from the plan
-                    if (plan.phases && plan.phases[0] && plan.phases[0].exercises) {
-                        const loadedExercises: Exercise[] = plan.phases[0].exercises.map((ex: any, idx: number) => ({
-                            id: String(idx + 1),
-                            name: ex.name || "Exercise",
-                            reps: ex.reps || "10 Reps",
-                            instruction: ex.notes || ex.name,
-                            steps: ex.steps || [],
-                            image: `https://images.unsplash.com/photo-${1571019613454 + idx}?auto=format&fit=crop&q=80&w=400`,
-                        }));
-                        if (loadedExercises.length > 0) {
-                            setExercises(loadedExercises);
-                        }
-                    }
-                } catch (e) {
-                    console.log("Could not parse saved plan");
-                }
-            }
-        }
-    }, []);
+    // Initial data loading is handled by props or parent fetching from DB
 
     // Generate coaching cue every 20 seconds
     useEffect(() => {
@@ -160,21 +131,46 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const logExercise = (completed: boolean) => {
-        if (typeof window === "undefined") return;
-        const logEntry = {
-            date: new Date().toISOString().slice(0, 10),
-            exerciseName: currentExercise.name,
-            reps: currentExercise.reps,
-            completed,
-            perceivedEffort,
-        };
+    const recordExercise = async (completed: boolean) => {
+        setIsLogging(true);
         try {
-            const existing = JSON.parse(localStorage.getItem("workoutLogs") || "[]");
-            existing.push(logEntry);
-            localStorage.setItem("workoutLogs", JSON.stringify(existing));
-        } catch {
-            localStorage.setItem("workoutLogs", JSON.stringify([logEntry]));
+            await logWorkout({
+                exercises: [{
+                    name: currentExercise.name,
+                    reps: currentExercise.reps,
+                    completed,
+                    perceivedEffort,
+                }],
+                durationMins: Math.floor((15 * 60 - timeLeft) / 60),
+                calories: Math.floor((15 * 60 - timeLeft) / 60) * 8, // Rough estimate
+            });
+        } catch (error) {
+            console.error("Failed to log workout to database:", error);
+            // Fallback to localStorage ONLY as a last resort if offline/error
+            try {
+                const logEntry = {
+                    date: new Date().toISOString().slice(0, 10),
+                    exerciseName: currentExercise.name,
+                    reps: currentExercise.reps,
+                    completed,
+                    perceivedEffort,
+                    syncPending: true,
+                };
+                const existing = JSON.parse(localStorage.getItem("pendingLogs") || "[]");
+                existing.push(logEntry);
+                localStorage.setItem("pendingLogs", JSON.stringify(existing));
+            } catch (e) {
+                console.error("Critical: Failed to even use localStorage fallback");
+            }
+        } finally {
+            setIsLogging(false);
+
+            // Advance to next exercise
+            if (currentIdx === exercises.length - 1) {
+                onExit();
+            } else {
+                setCurrentIdx((prev) => prev + 1);
+            }
         }
     };
 
@@ -197,17 +193,17 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
 
             <header className="flex justify-between items-center mb-12">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-2xl bg-foreground/5 flex items-center justify-center">
                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     </div>
                     <div>
                         <h2 className="text-xl font-black uppercase tracking-tighter italic">Step 1: <span className="text-primary">Getting Ready</span></h2>
-                        <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Exercise {currentIdx + 1} of {exercises.length}</p>
+                        <p className="text-muted text-xs font-bold uppercase tracking-widest">Exercise {currentIdx + 1} of {exercises.length}</p>
                     </div>
                 </div>
                 <button
                     onClick={onExit}
-                    className="p-3 rounded-full hover:bg-white/10 transition-colors"
+                    className="p-3 rounded-full hover:bg-foreground/10 transition-colors"
                 >
                     <X className="w-6 h-6" />
                 </button>
@@ -215,7 +211,7 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
 
             <div className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-8 items-center overflow-y-auto pb-12">
                 {/* Visual Reference */}
-                <div className="relative aspect-video lg:aspect-square rounded-[3rem] overflow-hidden border-2 border-white/5 bg-white/5">
+                <div className="relative aspect-video lg:aspect-square rounded-[3rem] overflow-hidden border-2 border-foreground/10 bg-foreground/5">
                     <img
                         src={currentExercise.image}
                         alt={currentExercise.name}
@@ -227,8 +223,8 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">AI Coach Helper</span>
                             <h3 className="text-2xl md:text-3xl font-black uppercase leading-tight">{currentExercise.name}</h3>
                         </div>
-                        <div className="bg-black/80 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 text-center min-w-[100px]">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Do this</p>
+                        <div className="bg-black/80 backdrop-blur-xl px-4 py-3 rounded-2xl border border-foreground/10 text-center min-w-[100px]">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted mb-1">Do this</p>
                             <p className="text-xl font-black italic">{currentExercise.reps}</p>
                         </div>
                     </div>
@@ -237,7 +233,7 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
                 {/* Controls and Feedback */}
                 <div className="space-y-8 flex flex-col justify-center h-full">
                     <div className="space-y-6">
-                        <div className="p-5 rounded-3xl bg-white/5 border border-white/10 space-y-4">
+                        <div className="p-5 rounded-3xl bg-foreground/5 border border-foreground/10 space-y-4">
                             <div className="flex items-center gap-2 text-primary">
                                 <AlertCircle className="w-4 h-4" />
                                 <span className="text-[10px] font-black uppercase tracking-widest">How to do it:</span>
@@ -246,28 +242,28 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
                                 {currentExercise.steps && currentExercise.steps.length > 0 ? (
                                     currentExercise.steps.map((step, sIdx) => (
                                         <div key={sIdx} className="flex gap-3 items-start">
-                                            <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">
+                                            <span className="w-5 h-5 rounded-full bg-foreground/5 flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5">
                                                 {sIdx + 1}
                                             </span>
-                                            <p className="text-sm text-white/80 leading-snug">{step}</p>
+                                            <p className="text-sm text-foreground/80 leading-snug">{step}</p>
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-sm text-white/80 leading-snug">{currentExercise.instruction}</p>
+                                    <p className="text-sm text-foreground/80 leading-snug">{currentExercise.instruction}</p>
                                 )}
                             </div>
                         </div>
 
-                        <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 flex flex-col items-center gap-8">
+                        <div className="p-8 rounded-[2.5rem] bg-foreground/5 border border-foreground/10 flex flex-col items-center gap-8">
                             <div className="text-center">
-                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-2">Protocol Clock</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted mb-2">Protocol Clock</p>
                                 <p className="text-6xl md:text-8xl font-black tracking-tighter tabular-nums">{formatTime(timeLeft)}</p>
                             </div>
 
                             <div className="flex items-center gap-6">
                                 <button
                                     onClick={() => setTimeLeft(15 * 60)}
-                                    className="p-4 rounded-full border border-white/10 hover:bg-white/5 transition-colors"
+                                    className="p-4 rounded-full border border-foreground/10 hover:bg-foreground/10 transition-colors"
                                 >
                                     <RotateCcw className="w-6 h-6" />
                                 </button>
@@ -282,7 +278,7 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
                                 </button>
                                 <button
                                     onClick={() => setCurrentIdx((prev) => Math.min(prev + 1, exercises.length - 1))}
-                                    className="p-4 rounded-full border border-white/10 hover:bg-white/5 transition-colors"
+                                    className="p-4 rounded-full border border-foreground/10 hover:bg-foreground/10 transition-colors"
                                 >
                                     <ChevronRight className="w-6 h-6" />
                                 </button>
@@ -290,7 +286,7 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
 
                             <div className="w-full space-y-6">
                                 <div className="space-y-3">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 text-center">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted text-center">
                                         Perceived Effort
                                     </p>
                                     <div className="flex items-center justify-center gap-2">
@@ -302,7 +298,7 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
                                                     "w-10 h-10 rounded-full text-sm font-black border transition-all duration-300",
                                                     perceivedEffort === level
                                                         ? "bg-primary text-black border-primary scale-110 shadow-lg shadow-primary/20"
-                                                        : "border-white/10 text-white/60 hover:border-white/30"
+                                                        : "border-foreground/20 text-muted hover:border-foreground/40"
                                                 )}
                                             >
                                                 {level}
@@ -313,28 +309,16 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
 
                                 <div className="grid grid-cols-1 gap-3">
                                     <button
-                                        onClick={() => {
-                                            logExercise(true);
-                                            if (currentIdx === exercises.length - 1) {
-                                                onExit();
-                                            } else {
-                                                setCurrentIdx((prev) => prev + 1);
-                                            }
-                                        }}
-                                        className="py-5 rounded-2xl bg-primary text-black font-black uppercase text-sm tracking-[0.2em] shadow-xl shadow-primary/30 active:scale-[0.98] transition-all"
+                                        disabled={isLogging}
+                                        onClick={() => recordExercise(true)}
+                                        className="py-5 rounded-2xl bg-primary text-black font-black uppercase text-sm tracking-[0.2em] shadow-xl shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                     >
-                                        {currentIdx === exercises.length - 1 ? "Finish Protocol" : "Complete & Next"}
+                                        {isLogging ? <Loader2 className="w-5 h-5 animate-spin" /> : (currentIdx === exercises.length - 1 ? "Finish Protocol" : "Complete & Next")}
                                     </button>
                                     <button
-                                        onClick={() => {
-                                            logExercise(false);
-                                            if (currentIdx === exercises.length - 1) {
-                                                onExit();
-                                            } else {
-                                                setCurrentIdx((prev) => prev + 1);
-                                            }
-                                        }}
-                                        className="py-3 rounded-2xl border border-white/10 text-white/40 font-black uppercase text-[10px] tracking-widest hover:bg-white/5 active:scale-[0.98] transition-all"
+                                        disabled={isLogging}
+                                        onClick={() => recordExercise(false)}
+                                        className="py-3 rounded-2xl border border-foreground/20 text-muted font-black uppercase text-[10px] tracking-widest hover:bg-foreground/10 active:scale-[0.98] transition-all disabled:opacity-50"
                                     >
                                         Skip Exercise
                                     </button>
@@ -344,18 +328,18 @@ export function WorkoutSession({ onExit, initialExercises, initialExerciseIndex 
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5 space-y-2">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Current Strain</p>
+                        <div className="p-6 rounded-3xl bg-foreground/5 border border-foreground/10 space-y-2">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted">Current Strain</p>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-2xl font-black">4.2</span>
                                 <Activity className="w-4 h-4 text-accent animate-pulse" />
                             </div>
                         </div>
-                        <div className="p-6 rounded-3xl bg-white/5 border border-white/5 space-y-2">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Estimated Burn</p>
+                        <div className="p-6 rounded-3xl bg-foreground/5 border border-foreground/10 space-y-2">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted">Estimated Burn</p>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-2xl font-black">128</span>
-                                <span className="text-xs font-bold text-white/30">KCAL</span>
+                                <span className="text-xs font-bold text-muted">KCAL</span>
                             </div>
                         </div>
                     </div>

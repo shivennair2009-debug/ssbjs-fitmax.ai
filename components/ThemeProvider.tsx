@@ -26,10 +26,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            <div className="flex min-h-screen bg-[#0a0a0a] dark:bg-black items-center justify-center">
-                <div className="mobile-container relative flex flex-col overflow-hidden border-x border-white/5 dark:border-white/10">
+            <div className="flex min-h-[100dvh] bg-neutral-100 dark:bg-neutral-950 items-center justify-center transition-colors">
+                <main className="w-full max-w-[450px] lg:max-w-[500px] min-h-[100dvh] bg-background shadow-2xl relative z-0 flex flex-col overflow-y-auto no-scrollbar sm:border-x sm:border-black/10 dark:sm:border-white/10 transition-colors">
                     {children}
-                </div>
+                </main>
             </div>
         </ThemeContext.Provider>
     );
