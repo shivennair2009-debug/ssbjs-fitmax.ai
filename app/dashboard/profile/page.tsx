@@ -201,7 +201,7 @@ export default function ProfilePage() {
         }
 
         loadData();
-    }, []);
+    }, [router, supabase, getUserProfile, getWorkoutLogs]);
 
 
     const unlockedCount = achievements.filter((a) => a.unlocked).length;

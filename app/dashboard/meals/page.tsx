@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, Utensils, Plus, ChefHat, Loader2 } from "lucide-react";
 import { getMealLogs, logMeal, getUserProfile, getWorkoutLogs } from "@/lib/actions";
@@ -20,27 +20,7 @@ export default function MealsPage() {
     const [isGeneratingDiet, setIsGeneratingDiet] = useState(false);
     const [generatedDiet, setGeneratedDiet] = useState<any>(null);
 
-    useEffect(() => {
-        async function loadData() {
-            try {
-                const [logs, profile] = await Promise.all([
-                    getMealLogs(),
-                    getUserProfile()
-                ]);
-                setMealLogs(logs || []);
-                if (profile) {
-                    await fetchRecommendation(profile);
-                }
-            } catch (error) {
-                console.error("Failed to load meal data", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        loadData();
-    }, []);
-
-    const fetchRecommendation = async (profile: any) => {
+    const fetchRecommendation = useCallback(async (profile: any) => {
         setIsLoadingRecommendation(true);
         try {
             const workoutLogs = await getWorkoutLogs();
@@ -61,7 +41,27 @@ export default function MealsPage() {
         } finally {
             setIsLoadingRecommendation(false);
         }
-    };
+    }, [mealLogs]);
+
+    useEffect(() => {
+        async function loadData() {
+            try {
+                const [logs, profile] = await Promise.all([
+                    getMealLogs(),
+                    getUserProfile()
+                ]);
+                setMealLogs(logs || []);
+                if (profile) {
+                    await fetchRecommendation(profile);
+                }
+            } catch (error) {
+                console.error("Failed to load meal data", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        loadData();
+    }, [fetchRecommendation, getMealLogs, getUserProfile]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

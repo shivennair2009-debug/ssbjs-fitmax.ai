@@ -25,7 +25,7 @@ export default function WorkoutPlanPage() {
             }
         }
         loadData();
-    }, []);
+    }, [getUserProfile]);
 
     if (isLoading) {
         return (

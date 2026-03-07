@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
+import { Zap, Loader2 } from "lucide-react";
 import { login, signup } from "./actions";
 import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginContent() {
     const searchParams = useSearchParams();
     const error = searchParams?.get("error");
 
@@ -174,5 +174,18 @@ export default function LoginPage() {
                 <p className="text-[9px] font-black uppercase tracking-[0.4em] text-muted opacity-20">Secure Intelligence Active</p>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted">Loading...</p>
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }

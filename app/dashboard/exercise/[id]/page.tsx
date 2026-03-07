@@ -68,7 +68,7 @@ export default function ExerciseActivePage() {
             }
         }
         loadData();
-    }, [currentIndex]);
+    }, [currentIndex, getUserProfile]);
 
     const currentExercise = dailyExercises[currentIndex];
     const totalExercises = dailyExercises.length;
@@ -138,7 +138,7 @@ export default function ExerciseActivePage() {
             });
             router.push("/dashboard/home");
         }
-    }, [currentIndex, totalExercises, router, dailyExercises]);
+    }, [currentIndex, totalExercises, router, dailyExercises, logWorkout]);
 
     const handleSkip = useCallback(async () => {
         setIsRestMode(false);
@@ -157,7 +157,7 @@ export default function ExerciseActivePage() {
             });
             router.push("/dashboard/home");
         }
-    }, [currentIndex, totalExercises, router, dailyExercises]);
+    }, [currentIndex, totalExercises, router, dailyExercises, logWorkout]);
 
     const handleFinishRest = useCallback(() => {
         setIsRestMode(false);
@@ -270,7 +270,7 @@ export default function ExerciseActivePage() {
 
                         {isAdapting ? (
                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="p-4 rounded-[2rem] bg-amber-500/10 border border-amber-500/20 space-y-3">
-                                <p className="text-[10px] font-black uppercase text-amber-500 tracking-widest">What's the issue?</p>
+                                <p className="text-[10px] font-black uppercase text-amber-500 tracking-widest">What&apos;s the issue?</p>
                                 <textarea
                                     className="w-full bg-background border border-card-border rounded-xl p-3 text-sm font-bold focus:outline-none focus:border-amber-500 resize-none"
                                     placeholder="e.g. My knee hurts, or I don't have a barbell..."

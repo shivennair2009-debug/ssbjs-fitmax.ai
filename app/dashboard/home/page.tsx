@@ -105,7 +105,7 @@ export default function DashboardHome() {
         }
 
         loadData();
-    }, []);
+    }, [getUserProfile, getWorkoutLogs]);
 
     const nextTask = dailyExercises.find((ex) => !doneNames.has(ex.name)) || dailyExercises[0];
     const nextTaskIndex = dailyExercises.findIndex((ex) => !doneNames.has(ex.name));

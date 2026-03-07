@@ -38,7 +38,7 @@ export default function DailyWorkoutPage() {
             }
         }
         loadData();
-    }, [params.id]);
+    }, [params.id, getUserProfile]);
 
     if (isLoading) {
         return (

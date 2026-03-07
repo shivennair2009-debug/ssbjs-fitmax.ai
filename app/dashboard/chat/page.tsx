@@ -33,7 +33,7 @@ export default function ChatPage() {
             }
         }
         loadData();
-    }, []);
+    }, [getUserProfile, getWorkoutLogs]);
 
     const handlePlanUpdate = async (weeklyPlan: any) => {
         if (!initialData?.currentPlan?.id) return;

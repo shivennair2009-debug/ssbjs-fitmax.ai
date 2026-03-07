@@ -47,7 +47,7 @@ export default function Home() {
         };
 
         checkAuth();
-    }, []);
+    }, [getUserProfile]);
 
     const nextStep = () => {
         if (step === "landing") setStep("goal");
