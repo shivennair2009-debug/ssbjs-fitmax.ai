@@ -141,15 +141,17 @@ function LoginContent() {
                             <>
                                 <button
                                     type="submit"
-                                    className="w-full py-3 rounded-xl bg-primary text-black font-black uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                    className="w-full py-3 rounded-xl bg-primary text-black font-black uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? "Signing In..." : "Log In"}
+                                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {isLoading ? "Synchronizing..." : "Log In"}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setIsSignUp(true)}
-                                    className="w-full py-3 rounded-xl bg-secondary/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-secondary/20 transition-all border border-card-border"
+                                    className="w-full py-3 rounded-xl bg-secondary/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-secondary/20 transition-all border border-card-border disabled:opacity-50"
+                                    disabled={isLoading}
                                 >
                                     Sign Up
                                 </button>
@@ -158,15 +160,17 @@ function LoginContent() {
                             <>
                                 <button
                                     type="submit"
-                                    className="w-full py-3 rounded-xl bg-primary text-black font-black uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                                    className="w-full py-3 rounded-xl bg-primary text-black font-black uppercase text-xs tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? "Creating Account..." : "Get Started"}
+                                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {isLoading ? "Creating Identity..." : "Get Started"}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setIsSignUp(false)}
-                                    className="w-full py-3 rounded-xl bg-secondary/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-secondary/20 transition-all border border-card-border"
+                                    className="w-full py-3 rounded-xl bg-secondary/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-secondary/20 transition-all border border-card-border disabled:opacity-50"
+                                    disabled={isLoading}
                                 >
                                     Already have an account? Sign In
                                 </button>

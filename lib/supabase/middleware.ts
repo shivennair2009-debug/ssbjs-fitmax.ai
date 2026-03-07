@@ -2,6 +2,31 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+    const path = request.nextUrl.pathname;
+    const inviteCode = request.cookies.get("fitmax_invite_code")?.value;
+
+    console.log(`[Middleware] Path: ${path} | Invite: ${inviteCode ? "PRESENT" : "MISSING"}`);
+
+    // 1. Mandatory Invitation Check (Enforce at the VERY TOP)
+    const isInviteRoute = path.startsWith("/invite");
+    const isApiRoute = path.startsWith("/api");
+    const isStaticAsset = path.startsWith("/_next") || path.includes(".");
+
+    if (!inviteCode && !isInviteRoute && !isApiRoute && !isStaticAsset) {
+        console.log(`[Middleware] Redirecting to /invite from ${path}`);
+        const url = request.nextUrl.clone();
+        url.pathname = "/invite";
+        return NextResponse.redirect(url);
+    }
+
+    // 2. Restriction Check for Specific Invite Codes
+    if (inviteCode === "r329hgk" && (request.nextUrl.pathname.startsWith("/dashboard/meals") || request.nextUrl.pathname.startsWith("/dashboard/chat"))) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dashboard/home";
+        url.searchParams.set("restricted", "true");
+        return NextResponse.redirect(url);
+    }
+
     let response = NextResponse.next({
         request: {
             headers: request.headers,
@@ -55,7 +80,6 @@ export async function updateSession(request: NextRequest) {
     );
 
     // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -72,29 +96,10 @@ export async function updateSession(request: NextRequest) {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Invite code logic
-    const inviteCode = request.cookies.get("fitmax_invite_code")?.value;
-    const isInviteRoute = request.nextUrl.pathname.startsWith("/invite");
-    const isApiRoute = request.nextUrl.pathname.startsWith("/api");
-    const isStaticAsset = request.nextUrl.pathname.startsWith("/_next") || request.nextUrl.pathname.includes(".");
-
-    if (!inviteCode && !isInviteRoute && !isApiRoute && !isStaticAsset) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/invite";
-        return NextResponse.redirect(url);
-    }
-
-    if (inviteCode === "r329hgk" && (request.nextUrl.pathname.startsWith("/dashboard/meals") || request.nextUrl.pathname.startsWith("/dashboard/chat"))) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/dashboard/home";
-        url.searchParams.set("restricted", "true");
-        return NextResponse.redirect(url);
-    }
-
-    // Redirect logged-in users away from login page
+    // Redirect logged-in users away from login page to the SMART ROOT
     if (user && request.nextUrl.pathname === "/login") {
         const url = request.nextUrl.clone();
-        url.pathname = "/dashboard/home";
+        url.pathname = "/"; // Changed from /dashboard/home to / to allow app/page.tsx to handle routing
         return NextResponse.redirect(url);
     }
 
