@@ -10,3 +10,5 @@ FitMax AI is a mobile-first, personal fitness assistant powered by Gemini AI. It
 - **Step-by-Step Instructions**: Every exercise includes clear, easy-to-follow steps.
 - **Meal Analysis**: Analyze your meals to keep track of your nutrition.
 
+Credits
+FitMax was developed using a combination of modern web technologies, open-source tools, and intelligent software systems that help deliver personalized fitness recommendations and insights.
