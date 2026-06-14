@@ -1,14 +1,9 @@
-# FitMax AI
-<!-- deployment-trigger: final-build-v1 -->
+FitMax AI
 
-FitMax AI is a mobile-first, personal fitness assistant powered by Gemini AI. It provides personalized workout plans, real-time coaching, and meal analysis with a simple, user-friendly interface.
+A mobile-first fitness app built to give you personalized workout plans, meal tracking, and coaching directly from your phone. 
+FitMax uses openAI to generate step-by-step exercises and analyze your meals, so you can stop guessing and start training. We built it with Next.js, Tailwind, and Framer Motion to ensure a fluid, native app-like feel on the web.
 
-## Features
-
-- **Mobile-First Interface**: Optimized for mobile devices with a clean, focused UI.
-- **AI Coaching**: Powered by `gemini-2.5-flash-lite` for high-quality workout generation and cues.
-- **Step-by-Step Instructions**: Every exercise includes clear, easy-to-follow steps.
-- **Meal Analysis**: Analyze your meals to keep track of your nutrition.
-
-Credits
-FitMax was developed using a combination of modern web technologies, open-source tools, and intelligent software systems that help deliver personalized fitness recommendations and insights.
+* Tech Stack
+- **Framework**: Next.js (App Router) & React
+- **Styling & Animations**: Tailwind CSS, Framer Motion, Lucide React
+- **AI**: OpenAI API (`GPT-4o mini`)
